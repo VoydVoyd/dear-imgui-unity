@@ -162,7 +162,6 @@ namespace ImGuiNET.Unity
             // text input
             while (textInputQueue.TryDequeue(out char c))
             {
-                Debug.Log(c);
                 io.AddInputCharacter(c);
             }
         }
