@@ -12,6 +12,9 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using TMPro;
 
 namespace ImGuiNET.Unity
 {
@@ -54,6 +57,8 @@ namespace ImGuiNET.Unity
         [SerializeField] private CursorShapesAsset cursorShapes = null!;
         
         private ImGuiScreenSpaceCanvas _myScreenSpaceCanvas;
+
+        private readonly Event _e = new Event();
         
         private void Awake()
         {
@@ -117,6 +122,24 @@ namespace ImGuiNET.Unity
                 enabled = false;
                 throw new Exception($"Failed to start: {reason}");
             }
+        }
+
+        private void LateUpdate()
+        {
+            if (_platform is ImGuiPlatformInputManager platformInputManager)
+            {
+                
+                var isAnyInputSelected =  EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null &&
+                                          (EventSystem.current.currentSelectedGameObject.GetComponent<InputField>() != null ||
+                                           EventSystem.current.currentSelectedGameObject.GetComponent<TMP_InputField>() != null);
+                
+                while (!isAnyInputSelected && Event.PopEvent(_e))
+                    if (_e.rawType == EventType.KeyDown && _e.character != 0 && _e.character != '\n')
+                    {
+                        platformInputManager.QueueTextInput(_e.character);
+                    }
+            }
+            
         }
 
         private void SetupCanvas()

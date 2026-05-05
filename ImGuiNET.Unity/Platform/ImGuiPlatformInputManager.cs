@@ -1,5 +1,6 @@
 ﻿#if IMGUI_DEBUG || UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
@@ -26,6 +27,7 @@ namespace ImGuiNET.Unity
     {
         int[] _mainKeys;                                                        // main keys
         readonly Event _e = new Event();                                        // to get text input
+        private Queue<char> textInputQueue = new Queue<char>();                            // to queue ui keyboard events that would be lost with this platform
 
         readonly CursorShapesAsset _cursorShapes;                               // cursor shape definitions
         ImGuiMouseCursor _lastCursor = ImGuiMouseCursor.COUNT;                  // last cursor requested by ImGui
@@ -99,6 +101,11 @@ namespace ImGuiNET.Unity
             }
         }
 
+        public void QueueTextInput(char c)
+        {
+            textInputQueue.Enqueue(c);
+        }
+
         void SetupKeyboard(ImGuiIOPtr io)
         {
             _mainKeys = new int[] {
@@ -151,11 +158,13 @@ namespace ImGuiNET.Unity
             var isAnyInputSelected =  EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null &&
                                       EventSystem.current.currentSelectedGameObject.GetComponent<InputField>() != null;
 #endif
-                
+            
             // text input
-            while (!isAnyInputSelected && Event.PopEvent(_e))
-                if (_e.rawType == EventType.KeyDown && _e.character != 0 && _e.character != '\n')
-                    io.AddInputCharacter(_e.character);
+            while (textInputQueue.TryDequeue(out char c))
+            {
+                Debug.Log(c);
+                io.AddInputCharacter(c);
+            }
         }
 
         static void UpdateMouse(ImGuiIOPtr io)
