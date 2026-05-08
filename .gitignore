@@ -5,3 +5,5 @@ obj/
 bin.meta
 obj.meta
 dear-imgui-unity.sln
+.idea/.idea.dear-imgui-unity.dir/
+.idea/
